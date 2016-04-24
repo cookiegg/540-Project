@@ -10,9 +10,9 @@ from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 import copy
 
-def data_power_consumption(path_to_dataset="./data/sinData.txt",
+def data_power_consumption(path_to_dataset="./data/BigsinData.txt",
                            sequence_length=13,
-                           ratio=0.9):
+                           ratio=0.995):
 
     with open(path_to_dataset) as f:
         data = csv.reader(f, delimiter=";")
@@ -83,13 +83,19 @@ model.add(Dense(1, activation='linear'))
 model.compile(loss="mse", optimizer="rmsprop")
 
 # model.fit(X_train, y_train, batch_size=512, nb_epoch=1, validation_split=0.05)
-model.fit(X_train, y_train, batch_size=512, nb_epoch=20)
+model.fit(X_train, y_train, batch_size=512, nb_epoch=5)
 
 # predicted = model.predict(X_test)
 # predicted = np.reshape(predicted, (predicted.size,))
 
-haha = model.predict(X_test,batch_size=10,verbose=1)
-haha = haha.reshape((len(haha)))
+# output the model
+from keras.utils.visualize_util import plot, to_graph
+graph = to_graph(model, show_shape=True)
+graph.write_png("model.png")
+
+U_hat = model.predict(X_test,verbose=1)
+U_hat = U_hat.reshape((len(U_hat)))
 import matplotlib.pyplot as plt
-plt.plot(haha)
+toPlot = np.column_stack((U_hat, y_test[:, 0]))
+plt.plot(toPlot)
 plt.show()
