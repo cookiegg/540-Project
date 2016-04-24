@@ -10,11 +10,9 @@ from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 import copy
 
-def data_power_consumption(path_to_dataset="newMPCData.txt",
+def data_power_consumption(path_to_dataset="./data/sinData.txt",
                            sequence_length=13,
-                           ratio=0.05):
-
-    max_values = ratio * 1000
+                           ratio=0.9):
 
     with open(path_to_dataset) as f:
         data = csv.reader(f, delimiter=";")
@@ -37,28 +35,24 @@ def data_power_consumption(path_to_dataset="newMPCData.txt",
         result.append(power[index: index + sequence_length])
     result = np.array(result)
 
-    X_plot = copy.copy(result[:100,:-1])
+    # we don't want to shuffle the test data so we split it here
+    row = round(ratio * result.shape[0])
+    X_test = copy.copy(result[row:, :-1])
+    y_test = copy.copy(result[row:, -1])
+
+    # offset by the mean
     result_mean = np.mean(result, 0)
     # need to sum over the 10/12
     result_mean = np.mean(result_mean, 0)
-    # result -= result_mean
+    result -= result_mean
     print "Shift : ", result_mean
     print "Data  : ", result.shape
     print "sth:", result[0]
 
-    row = round(0.25 * result.shape[0])
     train = result[:row, :]
-    #before random shuffle, store x for prediction in the end
-    # X_plot = train[:100,:-1]
-
     np.random.shuffle(train)
     X_train = train[:, :-1]
     y_train = train[:, -1]
-    X_test = result[:100, :-1]
-    y_test = result[:100, -1]
-
-    # X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-    # X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
     # Get rid of the Y's for targets, keep only the U's
     y_train = y_train.tolist()
@@ -66,9 +60,10 @@ def data_power_consumption(path_to_dataset="newMPCData.txt",
         del row[1]
     y_train = np.asarray(y_train)
     y_train = np.reshape(y_train, (y_train.shape[0]))
-    return [X_train, y_train, X_test, y_test,X_plot]
 
-[X_train, y_train, X_test, y_test,X_plot]=data_power_consumption()
+    return [X_train, y_train, X_test, y_test]
+
+[X_train, y_train, X_test, y_test]=data_power_consumption()
 
 
 data_dim = 2
@@ -89,11 +84,11 @@ model.compile(loss="mse", optimizer="rmsprop")
 
 # model.fit(X_train, y_train, batch_size=512, nb_epoch=1, validation_split=0.05)
 model.fit(X_train, y_train, batch_size=512, nb_epoch=20)
-predicted = model.predict(X_test)
-predicted = np.reshape(predicted, (predicted.size,))
 
+# predicted = model.predict(X_test)
+# predicted = np.reshape(predicted, (predicted.size,))
 
-haha = model.predict(X_plot,batch_size=10,verbose=1)
+haha = model.predict(X_test,batch_size=10,verbose=1)
 haha = haha.reshape((len(haha)))
 import matplotlib.pyplot as plt
 plt.plot(haha)
