@@ -136,3 +136,36 @@ import matplotlib.pyplot as plt
 toPlot = np.column_stack((U_hat, y_test[:, 0]))
 plt.plot(toPlot)
 plt.show()
+
+#Testing the model with Plant Model
+
+time_steps=100 #Poits to predict in the future
+xtest_start=X_test[1:2,:,:] #taking first 12 points in the test set to start prediction 
+utest=xtest_start[:,:,0] ##taking first 12 points in the test set to start prediction
+
+ytest=xtest_start[:,:,1]
+ykstack=np.zeros(shape=(time_steps,1)) #array which has predicted values
+for i in range(1,time_steps+1): #Predicting next 100 points with lstm and model
+    uhat=model.predict(xtest_start)
+    ustack=np.append(utest,uhat)
+    ustack=ustack.reshape(1,len(ustack),1)
+    #tacking u[k-3] from ustack
+    uk_3=ustack[0,8,0]
+    yk=ytest[0,11]
+    
+    yk1=0.6*yk+1.2*0.05*uk_3
+    ykstack[i-1]=yk1
+    
+    ystack=np.append(ytest,yk1)
+    ystack=ystack.reshape(1,len(ystack),1)
+   
+    utest1=ustack[0,1:13,0] #updating recent 12 points
+    utest=utest1.reshape(1,len(utest1),1) #converting to list of list of list
+    ytest1=ystack[0,1:13,0] #updating recent 12 points
+    ytest=ytest1.reshape(1,len(ytest1),1)   #converting to list of list of list 
+    xtest_start=np.column_stack((utest1,ytest1))
+    
+    xtest_start=xtest_start.reshape(1,len(xtest_start),2)
+    
+#plotting points predicted with lstm and model
+plt.plot(ykstack)  
