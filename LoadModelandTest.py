@@ -130,11 +130,12 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
 
     return [X_train, y_train, X_test, y_test, NN_train, NN_test]
 
-lstm_length = 20
-
+lstm_length = 13
 [X_train, y_train, X_test, y_test, NN_train, NN_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
+X_train = X_train[:, :, 0:1]
+X_test = X_test[:, :, 0:1]
 
-model = load_model('./savedModels/ModelZ/model', './savedModels/ModelZ/model_weights')
+model = load_model('./savedModels/ModelS/model', './savedModels/ModelS/model_weights')
 
 # test the model
 U_hat = model.predict([X_test, NN_test], verbose=1)
@@ -147,35 +148,35 @@ plt.plot(toPlot)
 plt.show()
 
 #Testing the model with Plant Model
+setpoint=7
+time_steps=1000 #Poits to predict in the future
+utest_start=X_test[0,:,:] #taking first 12 points in the test set to start prediction 
+utest_start= utest_start.reshape((1,12,1))
+nntest_start=NN_test[0]
+nntest_start=nntest_start.reshape(1,3)
 
-time_steps=100 #Poits to predict in the future
-xtest_start=X_test[1:2,:,:] #taking first 12 points in the test set to start prediction 
-utest=xtest_start[:,:,0] ##taking first 12 points in the test set to start prediction
 
-ytest=xtest_start[:,:,1]
 ykstack=np.zeros(shape=(time_steps,1)) #array which has predicted values
 for i in range(1,time_steps+1): #Predicting next 100 points with lstm and model
-    uhat=model.predict(xtest_start)
-    ustack=np.append(utest,uhat)
+    uhat=model.predict([utest_start, nntest_start], verbose=1)
+    ustack=np.append(utest_start,uhat)
     ustack=ustack.reshape(1,len(ustack),1)
+    
     #tacking u[k-3] from ustack
     uk_3=ustack[0,8,0]
-    yk=ytest[0,11]
+    yk=nntest_start[0,1]
     
     yk1=0.6*yk+1.2*0.05*uk_3
     ykstack[i-1]=yk1
     
-    ystack=np.append(ytest,yk1)
-    ystack=ystack.reshape(1,len(ystack),1)
+ 
 
     utest1=ustack[0,1:13,0] #updating recent 12 points
-    utest=utest1.reshape(1,len(utest1),1) #converting to list of list of list
-    ytest1=ystack[0,1:13,0] #updating recent 12 points
-    ytest=ytest1.reshape(1,len(ytest1),1)   #converting to list of list of list 
-    xtest_start=np.column_stack((utest1,ytest1))
+    utest_start=utest1.reshape(1,len(utest1),1) #converting to list of list of list
     
-    xtest_start=xtest_start.reshape(1,len(xtest_start),2)
-    
+    nntest_start=np.array([1,yk1,setpoint])  
+    nntest_start=nntest_start.reshape(1,3)
+
 #plotting points predicted with lstm and model
 plt.plot(ykstack)
 plt.show()
