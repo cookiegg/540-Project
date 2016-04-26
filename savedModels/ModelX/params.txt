@@ -1,0 +1,2 @@
+sequence length: 20
+lstm out hidden dim: 100, 100

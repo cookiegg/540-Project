@@ -173,10 +173,10 @@ def design_model(lstm_data_dim, nn_data_dim, timesteps):
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
-lstm_length = 20;
+lstm_length = 13;
 [X_train, y_train, X_test, y_test, NN_train, NN_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
-# X_train = X_train[:, :, 0:2]
-# X_test = X_test[:, :, 0:2]
+X_train = X_train[:, :, 0:1]
+X_test = X_test[:, :, 0:1]
 
 # define the input sizes for the LSTM
 lstm_data_dim = X_train.shape[2]
