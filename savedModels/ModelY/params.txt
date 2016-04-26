@@ -1,0 +1,3 @@
+sequence length: 250
+lstm out hidden dim: 100, 100
+training time: 2320 seconds
