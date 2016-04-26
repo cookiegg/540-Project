@@ -81,6 +81,7 @@ def extract_data(path, sequence_length):
 #      of the training file. You can specify the path to a separate training data file
 # Outputs:
 #   1. training and test data
+#      X_train is the data for the LSTM, NN_train is the data for the neural network
 def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0.995, path_to_test = 0):
 
     result = extract_data(path_to_dataset, sequence_length)  # training data
@@ -101,6 +102,8 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
         # we don't want to shuffle the test data so we split it here
         X_test = copy.copy(result[row:, :-1])
         y_test = copy.copy(result[row:, -1])
+        NN_test = X_test[:, X_test.shape[1]-1, [1, 2]]
+        NN_test = np.column_stack((np.ones((NN_test.shape[0], 1)), NN_test))
     else:
         test_data = extract_data(path_to_test, sequence_length)
         test_mean = np.mean(test_data, 0) # result is #trainingpoints by #sequence_length by 2, sum over #trainingpoints
@@ -111,31 +114,37 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
 
         X_test = test_data[:, :-1]
         y_test = test_data[:, -1]
+        NN_test = X_test[:, X_test.shape[1]-1, [1, 2]]
+        NN_test = np.column_stack((np.ones((NN_test.shape[0], 1)), NN_test))
 
     # shuffle the training data
     train = result[:row, :]
     np.random.shuffle(train)
     X_train = train[:, :-1]
     y_train = train[:, -1]
+    NN_train = X_train[:, X_train.shape[1]-1, [1, 2]]
+    NN_train = np.column_stack((np.ones((NN_train.shape[0], 1)), NN_train))  # add bias
 
     # Get rid of the Y's for targets, keep only the U's
     y_train = y_train[:, 0]
 
-    return [X_train, y_train, X_test, y_test]
+    return [X_train, y_train, X_test, y_test, NN_train, NN_test]
 
-[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", 13, 1, "./data/testFile.txt")
+lstm_length = 20
 
-model = load_model('./savedModels/trainOn3Features/model', './savedModels/trainOn3Features/model_weights')
+[X_train, y_train, X_test, y_test, NN_train, NN_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
+
+model = load_model('./savedModels/ModelZ/model', './savedModels/ModelZ/model_weights')
 
 # test the model
-U_hat = model.predict(X_test,verbose=1)
+U_hat = model.predict([X_test, NN_test], verbose=1)
 U_hat = U_hat.reshape((len(U_hat)))
-loss_and_metrics = model.evaluate(X_test, y_test[:, 0])
+loss_and_metrics = model.evaluate([X_test, NN_test], y_test[:, 0])
 
 # plot the predicted versus the actual U values
-# toPlot = np.column_stack((U_hat, y_test[:, 0]))
-# plt.plot(toPlot)
-# plt.show()
+toPlot = np.column_stack((U_hat, y_test[:, 0]))
+plt.plot(toPlot)
+plt.show()
 
 #Testing the model with Plant Model
 
