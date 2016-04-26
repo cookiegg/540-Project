@@ -151,8 +151,8 @@ def design_model(data_dim, timesteps):
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
 [X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", 13, 1, "./data/testFile.txt")
-X_train = X_train[:, :, 0:2]
-X_test = X_test[:, :, 0:2]
+# X_train = X_train[:, :, 0:2]
+# X_test = X_test[:, :, 0:2]
 
 # define the input sizes for the LSTM
 data_dim = X_train.shape[2]
