@@ -10,6 +10,7 @@ from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 from keras.utils.visualize_util import plot, to_graph
 import copy
+import matplotlib.pyplot as plt
 
 # Function to save the Keras model
 # Inputs:
@@ -132,10 +133,9 @@ U_hat = U_hat.reshape((len(U_hat)))
 loss_and_metrics = model.evaluate(X_test, y_test[:, 0])
 
 # plot the predicted versus the actual U values
-import matplotlib.pyplot as plt
-toPlot = np.column_stack((U_hat, y_test[:, 0]))
-plt.plot(toPlot)
-plt.show()
+#toPlot = np.column_stack((U_hat, y_test[:, 0]))
+#plt.plot(toPlot)
+#plt.show()
 
 #Testing the model with Plant Model
 
@@ -168,4 +168,5 @@ for i in range(1,time_steps+1): #Predicting next 100 points with lstm and model
     xtest_start=xtest_start.reshape(1,len(xtest_start),2)
     
 #plotting points predicted with lstm and model
-plt.plot(ykstack)  
+plt.plot(ykstack)
+plt.show()

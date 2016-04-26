@@ -51,12 +51,15 @@ def extract_data(path, sequence_length):
     with open(path) as f:
         data = csv.reader(f, delimiter=";")
         power = []  # we first parse the data file and put each line in a list
-        nb_of_values = 0
+        # nb_of_values = 0
         for line in data:
             try:
-                u, y = line[0].split("\t")  # we expect 2 values, U and Y, for each line separated by a tab
-                power.append([float(u), float(y)])
-                nb_of_values += 1
+                feat_str = line[0].split("\t")  # we expect 2 values, U and Y, for each line separated by a tab
+                features = [] # need to convert all features from string into floats
+                for feat in feat_str:
+                    features.append(float(feat))
+                power.append(features)
+                # nb_of_values += 1
             except ValueError:
                 pass
 
@@ -87,7 +90,8 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
     result -= result_mean
     print "Mean Shift : ", result_mean
     print "Data Shape: ", result.shape
-    print "Data Example: First Row", result[0]
+    print "Data Example: First Row \n"
+    print result[0]
 
     row = round(ratio * result.shape[0])  # last row to train on
 
@@ -114,11 +118,7 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
     y_train = train[:, -1]
 
     # Get rid of the Y's for targets, keep only the U's
-    y_train = y_train.tolist()
-    for row in y_train:
-        del row[1]
-    y_train = np.asarray(y_train)
-    y_train = np.reshape(y_train, (y_train.shape[0]))
+    y_train = y_train[:, 0]
 
     return [X_train, y_train, X_test, y_test]
 
@@ -150,15 +150,18 @@ def design_model(data_dim, timesteps):
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
-[X_train, y_train, X_test, y_test]=get_data()
+[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", 13, 1, "./data/testFile.txt")
+X_train = X_train[:, :, 0:2]
+X_test = X_test[:, :, 0:2]
 
 # define the input sizes for the LSTM
-data_dim = 2
+data_dim = X_train.shape[2]
 timesteps = 40
 
 # construct and compile the model
 model = design_model(data_dim, timesteps)
 start_time = time.time()
+print "Compiling Model ..."
 model.compile(loss="mse", optimizer="rmsprop")
 print("Compile Time : %s seconds --- \n" % (time.time() - start_time))
 
@@ -174,6 +177,7 @@ print("Training Time : %s seconds --- \n" % (time.time() - start_time))
 # test the model
 U_hat = model.predict(X_test,verbose=1)
 U_hat = U_hat.reshape((len(U_hat)))
+loss_and_metrics = model.evaluate(X_test, y_test[:, 0])
 
 # plot the predicted versus the actual U values
 import matplotlib.pyplot as plt
