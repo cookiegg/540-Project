@@ -148,7 +148,7 @@ plt.plot(toPlot)
 plt.show()
 
 #Testing the model with Plant Model
-setpoint=7
+setpoint=5
 time_steps=1000 #Poits to predict in the future
 utest_start=X_test[0,:,:] #taking first 12 points in the test set to start prediction 
 utest_start= utest_start.reshape((1,12,1))
