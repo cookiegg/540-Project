@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import csv
-from keras.layers.core import Dense, Activation, Dropout
+from keras.layers.core import Dense, Activation, Dropout, Merge
 from keras.layers.recurrent import LSTM
 from keras.models import Sequential
 from keras.utils.visualize_util import plot, to_graph
@@ -80,6 +80,7 @@ def extract_data(path, sequence_length):
 #      of the training file. You can specify the path to a separate training data file
 # Outputs:
 #   1. training and test data
+#      X_train is the data for the LSTM, NN_train is the data for the neural network
 def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0.995, path_to_test = 0):
 
     result = extract_data(path_to_dataset, sequence_length)  # training data
@@ -100,6 +101,8 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
         # we don't want to shuffle the test data so we split it here
         X_test = copy.copy(result[row:, :-1])
         y_test = copy.copy(result[row:, -1])
+        NN_test = X_test[:, X_test.shape[1]-1, [1, 2]]
+        NN_test = np.column_stack((np.ones((NN_test.shape[0], 1)), NN_test))
     else:
         test_data = extract_data(path_to_test, sequence_length)
         test_mean = np.mean(test_data, 0) # result is #trainingpoints by #sequence_length by 2, sum over #trainingpoints
@@ -110,57 +113,78 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
 
         X_test = test_data[:, :-1]
         y_test = test_data[:, -1]
+        NN_test = X_test[:, X_test.shape[1]-1, [1, 2]]
+        NN_test = np.column_stack((np.ones((NN_test.shape[0], 1)), NN_test))
 
     # shuffle the training data
     train = result[:row, :]
     np.random.shuffle(train)
     X_train = train[:, :-1]
     y_train = train[:, -1]
+    NN_train = X_train[:, X_train.shape[1]-1, [1, 2]]
+    NN_train = np.column_stack((np.ones((NN_train.shape[0], 1)), NN_train))  # add bias
 
     # Get rid of the Y's for targets, keep only the U's
     y_train = y_train[:, 0]
 
-    return [X_train, y_train, X_test, y_test]
+    return [X_train, y_train, X_test, y_test, NN_train, NN_test]
 
 # Function to design and construct the model
 # Inputs:
-#   1. data_dim: Dimension of training data, in this case 2 because U and Y
-#   2. timesteps: length of LSTM
+#   1. lstm_data_dim: Dimension of lstm training data, in this case 3 because U, Y, ref
+#   2. nn_data_dim: Dimension of NN training data, in this case 3 because Yk, Ref_k, 1
+#   3. timesteps: length of LSTM
 # Outputs:
 #   1. Keras model
-def design_model(data_dim, timesteps):
-    model = Sequential()
-    output_hidden_size = [100, 100]
-    drop_out_rate = [0.5, 0.5]
-    model.add(LSTM(output_hidden_size[0], return_sequences=True, input_shape=(timesteps, data_dim)))
-    model.add(Dropout(drop_out_rate[0]))  # return_sequences=True means output cell state C at each LSTM sequence
-    model.add(LSTM(output_hidden_size[1], return_sequences=False))
-    model.add(Dropout(drop_out_rate[1]))  # return_sequence=False means output only last cell state C in LSTM sequence
+def design_model(lstm_data_dim, nn_data_dim, timesteps):
+    model_A = Sequential()
+    model_B = Sequential()
+    model_Combine = Sequential()
 
-    # final dense layer
-    model.add(Dense(1, activation='linear'))
+    # LSTM Part
+    lstm_hidden_size = [20, 100]
+    drop_out_rate = [0.5, 0.5]
+    model_A.add(LSTM(lstm_hidden_size[0], return_sequences=True, input_shape=(timesteps, lstm_data_dim)))
+    model_A.add(Dropout(drop_out_rate[0]))  # return_sequences=True means output cell state C at each LSTM sequence
+    model_A.add(LSTM(lstm_hidden_size[1], return_sequences=False))
+    model_A.add(Dropout(drop_out_rate[1]))  # return_sequence=False means output only last cell state C in LSTM sequence
+    model_A.add(Dense(1, activation='linear'))
+
+    # NN Part
+    nn_hidden_size = [20, 20]
+    nn_drop_rate = [0.2, 0.2]
+    model_B.add(Dense(nn_hidden_size[0], input_dim=nn_data_dim))
+    model_B.add(Dropout(nn_drop_rate[0]))
+    model_B.add(Dense(nn_hidden_size[1]))
+    model_B.add(Dropout(nn_drop_rate[1]))
+    model_B.add(Dense(1, activation='linear'))
+
+    # Merge and Final Layer
+    model_Combine.add(Merge([model_A, model_B], mode='concat'))
+    model_Combine.add(Dense(1, activation='linear'))
 
     # output the model to a PNG file for visualization
     print "Outputting model graph to model.png"
-    graph = to_graph(model, show_shape=True)
+    graph = to_graph(model_Combine, show_shape=True)
     graph.write_png("model.png")
 
-    return model
+    return model_Combine
 
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
 lstm_length = 20;
-[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
+[X_train, y_train, X_test, y_test, NN_train, NN_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
 # X_train = X_train[:, :, 0:2]
 # X_test = X_test[:, :, 0:2]
 
 # define the input sizes for the LSTM
-data_dim = X_train.shape[2]
+lstm_data_dim = X_train.shape[2]
+nn_data_dim = NN_train.shape[1]
 timesteps = lstm_length
 
 # construct and compile the model
-model = design_model(data_dim, timesteps)
+model = design_model(lstm_data_dim, nn_data_dim, timesteps)
 start_time = time.time()
 print "Compiling Model ..."
 model.compile(loss="mse", optimizer="rmsprop")
@@ -172,13 +196,13 @@ print("Compile Time : %s seconds --- \n" % (time.time() - start_time))
 my_batch_size = 512
 my_epoch = 5
 start_time = time.time()
-model.fit(X_train, y_train, batch_size=my_batch_size, nb_epoch=my_epoch)
+model.fit([X_train, NN_train], y_train, batch_size=my_batch_size, nb_epoch=my_epoch)
 print("Training Time : %s seconds --- \n" % (time.time() - start_time))
 
 # test the model
-U_hat = model.predict(X_test,verbose=1)
+U_hat = model.predict([X_test, NN_test], verbose=1)
 U_hat = U_hat.reshape((len(U_hat)))
-loss_and_metrics = model.evaluate(X_test, y_test[:, 0])
+loss_and_metrics = model.evaluate([X_test, NN_test], y_test[:, 0])
 
 # plot the predicted versus the actual U values
 import matplotlib.pyplot as plt
