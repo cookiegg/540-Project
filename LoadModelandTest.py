@@ -130,11 +130,12 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
 
     return [X_train, y_train, X_test, y_test, NN_train, NN_test]
 
-lstm_length = 20
-
+lstm_length = 13
 [X_train, y_train, X_test, y_test, NN_train, NN_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
+X_train = X_train[:, :, 0:1]
+X_test = X_test[:, :, 0:1]
 
-model = load_model('./savedModels/ModelZ/model', './savedModels/ModelZ/model_weights')
+model = load_model('./savedModels/ModelS/model', './savedModels/ModelS/model_weights')
 
 # test the model
 U_hat = model.predict([X_test, NN_test], verbose=1)
