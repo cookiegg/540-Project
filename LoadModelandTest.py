@@ -52,12 +52,15 @@ def extract_data(path, sequence_length):
     with open(path) as f:
         data = csv.reader(f, delimiter=";")
         power = []  # we first parse the data file and put each line in a list
-        nb_of_values = 0
+        # nb_of_values = 0
         for line in data:
             try:
-                u, y = line[0].split("\t")  # we expect 2 values, U and Y, for each line separated by a tab
-                power.append([float(u), float(y)])
-                nb_of_values += 1
+                feat_str = line[0].split("\t")  # we expect 2 values, U and Y, for each line separated by a tab
+                features = [] # need to convert all features from string into floats
+                for feat in feat_str:
+                    features.append(float(feat))
+                power.append(features)
+                # nb_of_values += 1
             except ValueError:
                 pass
 
@@ -88,7 +91,8 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
     result -= result_mean
     print "Mean Shift : ", result_mean
     print "Data Shape: ", result.shape
-    print "Data Example: First Row", result[0]
+    print "Data Example: First Row \n"
+    print result[0]
 
     row = round(ratio * result.shape[0])  # last row to train on
 
@@ -115,17 +119,13 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
     y_train = train[:, -1]
 
     # Get rid of the Y's for targets, keep only the U's
-    y_train = y_train.tolist()
-    for row in y_train:
-        del row[1]
-    y_train = np.asarray(y_train)
-    y_train = np.reshape(y_train, (y_train.shape[0]))
+    y_train = y_train[:, 0]
 
     return [X_train, y_train, X_test, y_test]
 
-[X_train, y_train, X_test, y_test]=get_data("./data/manySines.txt", 13, 1, "./data/testFile.txt")
+[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", 13, 1, "./data/testFile.txt")
 
-model = load_model('./savedModels/trainOnManySines/model', './savedModels/trainOnManySines/myw_weights')
+model = load_model('./savedModels/trainOn3Features/model', './savedModels/trainOn3Features/model_weights')
 
 # test the model
 U_hat = model.predict(X_test,verbose=1)
@@ -133,9 +133,9 @@ U_hat = U_hat.reshape((len(U_hat)))
 loss_and_metrics = model.evaluate(X_test, y_test[:, 0])
 
 # plot the predicted versus the actual U values
-#toPlot = np.column_stack((U_hat, y_test[:, 0]))
-#plt.plot(toPlot)
-#plt.show()
+# toPlot = np.column_stack((U_hat, y_test[:, 0]))
+# plt.plot(toPlot)
+# plt.show()
 
 #Testing the model with Plant Model
 
