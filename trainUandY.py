@@ -130,8 +130,8 @@ def get_data(path_to_dataset="./data/manySines.txt", sequence_length=13, ratio=0
 #   1. Keras model
 def design_model(data_dim, timesteps):
     model = Sequential()
-    output_hidden_size = [10, 100]
-    drop_out_rate = [0.2, 0.2]
+    output_hidden_size = [100, 100]
+    drop_out_rate = [0.5, 0.5]
     model.add(LSTM(output_hidden_size[0], return_sequences=True, input_shape=(timesteps, data_dim)))
     model.add(Dropout(drop_out_rate[0]))  # return_sequences=True means output cell state C at each LSTM sequence
     model.add(LSTM(output_hidden_size[1], return_sequences=False))
@@ -150,13 +150,14 @@ def design_model(data_dim, timesteps):
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
-[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", 13, 1, "./data/testFile.txt")
+lstm_length = 20;
+[X_train, y_train, X_test, y_test]=get_data("./data/manySinesWithRef.txt", lstm_length, 1, "./data/testFile.txt")
 # X_train = X_train[:, :, 0:2]
 # X_test = X_test[:, :, 0:2]
 
 # define the input sizes for the LSTM
 data_dim = X_train.shape[2]
-timesteps = 40
+timesteps = lstm_length
 
 # construct and compile the model
 model = design_model(data_dim, timesteps)

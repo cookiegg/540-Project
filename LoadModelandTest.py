@@ -158,7 +158,7 @@ for i in range(1,time_steps+1): #Predicting next 100 points with lstm and model
     
     ystack=np.append(ytest,yk1)
     ystack=ystack.reshape(1,len(ystack),1)
-   
+
     utest1=ustack[0,1:13,0] #updating recent 12 points
     utest=utest1.reshape(1,len(utest1),1) #converting to list of list of list
     ytest1=ystack[0,1:13,0] #updating recent 12 points
