@@ -1,7 +1,8 @@
 % This script is intended to test the applicability of using prewhitened error and u
 
-clear
+clear all
 clc
+close all
 % load('e.mat'); % For comparison, use same white noise sequence
 
 z=tf('z',1); %transfer function model
@@ -24,11 +25,11 @@ psim=ss([plant H],'min'); %minimal realisation
 psim=setmpcsignals(psim,'MV',1,'UD',2);
 
 %variying set point:
-Tf=1000;
+ref = generateJumpRef();
+Tf=length(ref);
 
-ref = generateTestReference();
+%ref = generateTestReference();
 %ref=ones(1000,1);
-%ref=[1*ones(100,1); 5*ones(100,1);3*ones(100,1); 6*ones(100,1);8*ones(100,1); 0*ones(100,1);6*ones(100,1); 4*ones(100,1); 1*ones(100,1); 5*ones(100,1)];
 % distmodel=1/(1-1*z^(-1)); % Origial Model
 e=randn(Tf,1)*0.01;
 distmodel=(1+0.5*z^(-1))/(1+0.3*z^(-1));
@@ -49,6 +50,9 @@ options.model=psim;
 y_hat=lsim(G,u);
 error=y-y_hat;
 
+figure;
+hold on;
+plot(ref); plot(u,'g'); plot(y,'r'); axis([0, 2000, -5, 5]);
 
 % %%
 % 
