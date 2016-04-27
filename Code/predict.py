@@ -8,7 +8,8 @@ from keras.utils.visualize_util import plot, to_graph
 from keras.regularizers import l2, activity_l2
 import copy
 
-def predict_model(model,setpoint,time_steps,utest_start,nntest_start,lstm_length,ykstack):
+def predict_model(model,y_test,time_steps,utest_start,nntest_start,lstm_length,ykstack):
+    setpoint=5
     for i in range(1,time_steps+1): #Predicting next 100 points with lstm and model
         uhat=model.predict([utest_start, nntest_start], verbose=1)
         ustack=np.append(utest_start,uhat)
