@@ -7,6 +7,7 @@ import csv
 from keras.layers.core import Dense, Activation, Dropout, Merge
 from keras.layers.recurrent import LSTM
 from keras.utils.visualize_util import plot, to_graph
+from keras.regularizers import l2, activity_l2
 import copy
 
 import utils as util
@@ -27,7 +28,7 @@ nn_data_dim = NN_train.shape[1]
 timesteps = lstm_length
 
 # construct and compile the model
-model = mod.design_model(lstm_data_dim, nn_data_dim, timesteps)
+model = mod.design_model_A(lstm_data_dim, nn_data_dim, timesteps)
 start_time = time.time()
 print "Compiling Model ..."
 model.compile(loss="mse", optimizer="rmsprop")
