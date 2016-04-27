@@ -22,7 +22,7 @@ lstm_length = 13
 X_train = X_train[:, :, 0:1]
 X_test = X_test[:, :, 0:1]
 
-model = util.load_model('./../savedModels/ModelS/model_2', './../savedModels/ModelS/model_2_weights')
+model = util.load_model('./../savedModels/ModelG/model', './../savedModels/ModelG/model_weights')
 
 # # retraining
 # my_batch_size = 512

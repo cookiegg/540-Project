@@ -28,7 +28,7 @@ nn_data_dim = NN_train.shape[1]
 timesteps = lstm_length
 
 # construct and compile the model
-model = mod.design_model_A(lstm_data_dim, nn_data_dim, timesteps)
+model = mod.design_model(lstm_data_dim, nn_data_dim, timesteps)
 start_time = time.time()
 print "Compiling Model ..."
 model.compile(loss="mse", optimizer="rmsprop")
@@ -47,6 +47,7 @@ print("Training Time : %s seconds --- \n" % (time.time() - start_time))
 U_hat = model.predict([X_test, NN_test], verbose=1)
 U_hat = U_hat.reshape((len(U_hat)))
 loss_and_metrics = model.evaluate([X_test, NN_test], y_test[:, 0])
+print "test error is: ", loss_and_metrics
 
 # plot the predicted versus the actual U values
 toPlot = np.column_stack((U_hat, y_test[:, 0]))

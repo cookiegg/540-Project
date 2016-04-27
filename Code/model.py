@@ -93,8 +93,8 @@ def design_model_nn(lstm_data_dim, nn_data_dim, timesteps):
     model_B = Sequential()
 
     # NN Part
-    nn_hidden_size = [20, 20]
-    nn_drop_rate = [0.2, 0.2]
+    nn_hidden_size = [50, 50]
+    nn_drop_rate = [0.4, 0.4]
     nn_reg = [0.01, 0.01, 0.01]
     nn_areg = [0.01, 0.01, 0.01]
     model_B.add(Dense(nn_hidden_size[0], input_dim=nn_data_dim, W_regularizer=l2(nn_reg[0]), activity_regularizer=activity_l2(nn_areg[0])))
@@ -109,3 +109,25 @@ def design_model_nn(lstm_data_dim, nn_data_dim, timesteps):
     graph.write_png("model.png")
 
     return model_B
+
+def design_model_lstm(lstm_data_dim, nn_data_dim, timesteps):
+    model_A = Sequential()
+
+    # LSTM Part
+    lstm_hidden_size = [20, 100]
+    drop_out_rate = [0.5, 0.5]
+    reg = [0.01]
+    areg = [0.01]
+    # unfortunately regularization is not implemented for LSTMs
+    model_A.add(LSTM(lstm_hidden_size[0], return_sequences=True, input_shape=(timesteps, lstm_data_dim)))
+    model_A.add(Dropout(drop_out_rate[0]))  # return_sequences=True means output cell state C at each LSTM sequence
+    model_A.add(LSTM(lstm_hidden_size[1], return_sequences=False))
+    model_A.add(Dropout(drop_out_rate[1]))  # return_sequence=False means output only last cell state C in LSTM sequence
+    model_A.add(Dense(1, activation='linear', W_regularizer=l2(reg[0]), activity_regularizer=activity_l2(areg[0])))
+
+    # output the model to a PNG file for visualization
+    print "Outputting model graph to model.png"
+    graph = to_graph(model_A, show_shape=True)
+    graph.write_png("model.png")
+
+    return model_A
