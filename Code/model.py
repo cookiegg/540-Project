@@ -56,8 +56,8 @@ def design_model_A(lstm_data_dim, nn_data_dim, timesteps):
     model_Combine = Sequential()
 
     # LSTM Part
-    lstm_hidden_size = [20, 100]
-    drop_out_rate = [0.5, 0.5]
+    lstm_hidden_size = [40, 100]
+    drop_out_rate = [0.6, 0.5]
     reg = [0.01]
     areg = [0.01]
     # unfortunately regularization is not implemented for LSTMs
@@ -68,8 +68,8 @@ def design_model_A(lstm_data_dim, nn_data_dim, timesteps):
     model_A.add(Dense(1, activation='linear', W_regularizer=l2(reg[0]), activity_regularizer=activity_l2(areg[0])))
 
     # NN Part
-    nn_hidden_size = [20, 20]
-    nn_drop_rate = [0.2, 0.2]
+    nn_hidden_size = [40, 40]
+    nn_drop_rate = [0.5, 0.5]
     nn_reg = [0.01, 0.01, 0.01]
     nn_areg = [0.01, 0.01, 0.01]
     model_B.add(Dense(nn_hidden_size[0], input_dim=nn_data_dim, W_regularizer=l2(nn_reg[0]), activity_regularizer=activity_l2(nn_areg[0])))
@@ -88,3 +88,24 @@ def design_model_A(lstm_data_dim, nn_data_dim, timesteps):
     graph.write_png("model.png")
 
     return model_Combine
+
+def design_model_nn(lstm_data_dim, nn_data_dim, timesteps):
+    model_B = Sequential()
+
+    # NN Part
+    nn_hidden_size = [20, 20]
+    nn_drop_rate = [0.2, 0.2]
+    nn_reg = [0.01, 0.01, 0.01]
+    nn_areg = [0.01, 0.01, 0.01]
+    model_B.add(Dense(nn_hidden_size[0], input_dim=nn_data_dim, W_regularizer=l2(nn_reg[0]), activity_regularizer=activity_l2(nn_areg[0])))
+    model_B.add(Dropout(nn_drop_rate[0]))
+    model_B.add(Dense(nn_hidden_size[1], W_regularizer=l2(nn_reg[1]), activity_regularizer=activity_l2(nn_areg[1])))
+    model_B.add(Dropout(nn_drop_rate[1]))
+    model_B.add(Dense(1, activation='linear', W_regularizer=l2(nn_reg[2]), activity_regularizer=activity_l2(nn_areg[2])))
+
+    # output the model to a PNG file for visualization
+    print "Outputting model graph to model.png"
+    graph = to_graph(model_B, show_shape=True)
+    graph.write_png("model.png")
+
+    return model_B

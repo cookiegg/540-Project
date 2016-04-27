@@ -15,8 +15,8 @@ import model as mod
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
-lstm_length = 13;
-[X_train, y_train, X_test, y_test, NN_train, NN_test]=util.get_data("./../data/manySinesWithRef.txt", lstm_length, 1, "./../data/testFile.txt")
+lstm_length = 21;
+[X_train, y_train, X_test, y_test, NN_train, NN_test]=util.get_data("./../data/sineAndJump.txt", lstm_length, 1, "./../data/testFile.txt")
 
 # Get rid of Y and REF because lstm doesn't want to train on this
 X_train = X_train[:, :, 0:1]
