@@ -1,0 +1,15 @@
+    lstm_length = 21;
+
+    # LSTM Part
+    lstm_hidden_size = [40, 100]
+    drop_out_rate = [0.6, 0.5]
+    reg = [0.01]
+    areg = [0.01]
+
+    # NN Part
+    nn_hidden_size = [40, 40]
+    nn_drop_rate = [0.5, 0.5]
+    nn_reg = [0.01, 0.01, 0.01]
+    nn_areg = [0.01, 0.01, 0.01]
+
+

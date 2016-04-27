@@ -25,7 +25,7 @@ psim=ss([plant H],'min'); %minimal realisation
 psim=setmpcsignals(psim,'MV',1,'UD',2);
 
 %variying set point:
-ref = generateJumpRef();
+ref = ultimateRef();
 Tf=length(ref);
 
 %ref = generateTestReference();
@@ -52,7 +52,7 @@ error=y-y_hat;
 
 figure;
 hold on;
-plot(ref); plot(u,'g'); plot(y,'r'); axis([0, 2000, -5, 5]);
+plot(ref); plot(u,'g'); plot(y,'r'); axis([0, 2000, -20, 20]);
 
 % %%
 % 

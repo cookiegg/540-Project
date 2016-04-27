@@ -5,6 +5,7 @@ import csv
 from keras.layers.core import Dense, Activation, Dropout, Merge
 from keras.layers.recurrent import LSTM
 from keras.utils.visualize_util import plot, to_graph
+from keras.regularizers import l2, activity_l2
 import copy
 
 def predict_model(model,setpoint,time_steps,utest_start,nntest_start,lstm_length,ykstack):

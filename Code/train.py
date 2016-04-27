@@ -7,6 +7,7 @@ import csv
 from keras.layers.core import Dense, Activation, Dropout, Merge
 from keras.layers.recurrent import LSTM
 from keras.utils.visualize_util import plot, to_graph
+from keras.regularizers import l2, activity_l2
 import copy
 
 import utils as util
@@ -14,8 +15,8 @@ import model as mod
 
 # ------------------------------------- Main Loop --------------------------------------------
 # Get the data
-lstm_length = 13;
-[X_train, y_train, X_test, y_test, NN_train, NN_test]=util.get_data("./../data/manySinesWithRef.txt", lstm_length, 1, "./../data/testFile.txt")
+lstm_length = 21;
+[X_train, y_train, X_test, y_test, NN_train, NN_test]=util.get_data("./../data/sineAndJump.txt", lstm_length, 1, "./../data/testFile.txt")
 
 # Get rid of Y and REF because lstm doesn't want to train on this
 X_train = X_train[:, :, 0:1]
@@ -27,7 +28,7 @@ nn_data_dim = NN_train.shape[1]
 timesteps = lstm_length
 
 # construct and compile the model
-model = mod.design_model(lstm_data_dim, nn_data_dim, timesteps)
+model = mod.design_model_A(lstm_data_dim, nn_data_dim, timesteps)
 start_time = time.time()
 print "Compiling Model ..."
 model.compile(loss="mse", optimizer="rmsprop")
