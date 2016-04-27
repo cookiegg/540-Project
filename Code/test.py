@@ -43,7 +43,7 @@ plt.plot(toPlot)
 plt.show()
 
 #Testing the model with Plant Model
-setpoint=1
+
 time_steps=1000 #Poits to predict in the future
 ykstack=np.zeros(shape=(time_steps,1))
 utest_start=X_test[0,:,:] #taking first 12 points in the test set to start prediction
@@ -52,7 +52,10 @@ nntest_start=NN_test[0]
 nntest_start=nntest_start.reshape(1,3) #3 denotes 3 dimensions
 
  #array which has predicted values
-ykstack=pdt.predict_model(model,setpoint,time_steps,utest_start,nntest_start,lstm_length,ykstack)
+#specify setpoin in predict function
+#predict_model for constant set point
+#predict_model2 for varying setpoint
+ykstack=pdt.predict_model(model,y_test,time_steps,utest_start,nntest_start,lstm_length,ykstack)
 #plotting points predicted with lstm and model
 plt.plot(ykstack)
 plt.show()
