@@ -1,0 +1,50 @@
+from keras.models import Sequential
+from keras.layers import LSTM, Dense
+import numpy as np
+import time
+from keras.layers.core import Dense, Activation, Dropout, Merge
+from keras.layers.recurrent import LSTM
+from keras.models import Sequential
+from keras.utils.visualize_util import plot, to_graph
+import copy
+
+# Function to design and construct the model
+# Inputs:
+#   1. lstm_data_dim: Dimension of lstm training data, in this case 3 because U, Y, ref
+#   2. nn_data_dim: Dimension of NN training data, in this case 3 because Yk, Ref_k, 1
+#   3. timesteps: length of LSTM
+# Outputs:
+#   1. Keras model
+def design_model(lstm_data_dim, nn_data_dim, timesteps):
+    model_A = Sequential()
+    model_B = Sequential()
+    model_Combine = Sequential()
+
+    # LSTM Part
+    lstm_hidden_size = [20, 100]
+    drop_out_rate = [0.5, 0.5]
+    model_A.add(LSTM(lstm_hidden_size[0], return_sequences=True, input_shape=(timesteps, lstm_data_dim)))
+    model_A.add(Dropout(drop_out_rate[0]))  # return_sequences=True means output cell state C at each LSTM sequence
+    model_A.add(LSTM(lstm_hidden_size[1], return_sequences=False))
+    model_A.add(Dropout(drop_out_rate[1]))  # return_sequence=False means output only last cell state C in LSTM sequence
+    model_A.add(Dense(1, activation='linear'))
+
+    # NN Part
+    nn_hidden_size = [20, 20]
+    nn_drop_rate = [0.2, 0.2]
+    model_B.add(Dense(nn_hidden_size[0], input_dim=nn_data_dim))
+    model_B.add(Dropout(nn_drop_rate[0]))
+    model_B.add(Dense(nn_hidden_size[1]))
+    model_B.add(Dropout(nn_drop_rate[1]))
+    model_B.add(Dense(1, activation='linear'))
+
+    # Merge and Final Layer
+    model_Combine.add(Merge([model_A, model_B], mode='concat'))
+    model_Combine.add(Dense(1, activation='linear'))
+
+    # output the model to a PNG file for visualization
+    print "Outputting model graph to model.png"
+    graph = to_graph(model_Combine, show_shape=True)
+    graph.write_png("model.png")
+
+    return model_Combine
