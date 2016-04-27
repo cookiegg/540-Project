@@ -103,4 +103,27 @@ def predict_model_lstm(model,X_test,lstm_length,time_steps,ykstack,yreftest,yref
         xtest_start=np.column_stack((temp,yreftest_start))
         xtest_start=xtest_start.reshape(1,lstm_length-1,3)
     return ykstack        
+
+
+def predict_model_nn(model,lstm_length,time_steps,NNtest_start,utest_start,ytest_start,yreftest_start,yreftest,bias,ykstack):
+    for i in range(1,time_steps):
+        print i
+    
+    
+        uhat = model.predict(NNtest_start, verbose=1)
+        ustack=np.append(utest_start,uhat)
+        ustack=ustack.reshape(1,len(ustack),1)
+        uk_3=ustack[0,(lstm_length-5),0]
+        yk=ytest_start;
         
+        yk1=0.6*yk+0.05*uk_3
+        ykstack[i-1]=yk1
+    
+    
+        utest_start=ustack[0,1:lstm_length,0]
+    
+        ytest_start=yk1
+        yreftest_start=yreftest[i]
+        NNtest_start=np.column_stack((bias,ytest_start))
+        NNtest_start=np.column_stack((NNtest_start,yreftest_start))
+    return ykstack        
