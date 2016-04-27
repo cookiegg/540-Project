@@ -1,0 +1,4 @@
+	training file: sineAndJump.txt    
+	lstm length = 20
+	trained lstm on all of [u y ref]
+

@@ -1,0 +1,17 @@
+	training file: sineAndJump.txt    
+
+    # NN Part
+    nn_hidden_size = [20, 20]
+    nn_drop_rate = [0.2, 0.2]
+    nn_reg = [0.01, 0.01, 0.01]
+    nn_areg = [0.01, 0.01, 0.01]
+
+model_2
+    # NN Part
+    nn_hidden_size = [50, 50]
+    nn_drop_rate = [0.4, 0.4]
+    nn_reg = [0.01, 0.01, 0.01]
+    nn_areg = [0.01, 0.01, 0.01]
+
+
+
